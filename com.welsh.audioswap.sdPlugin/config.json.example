@@ -1,0 +1,6 @@
+{
+  "_comment": "Copy this file to config.json and change the values to your own. config.json is gitignored. These same values can instead (or also) be set per-action in the Stream Deck Property Inspector, which overrides this file. deviceA/deviceB are name fragments matched against your playback devices (partial, case-insensitive). pinApp is optional (e.g. Discord.exe); leave empty to pin nothing.",
+  "deviceA": "Shure MV7",
+  "deviceB": "M28U",
+  "pinApp": "Discord.exe"
+}

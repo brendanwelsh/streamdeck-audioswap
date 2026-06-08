@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Audio Output settings</title>
+  <style>
+    body { font: 13px/1.4 -apple-system, "Segoe UI", sans-serif; color: #ddd; background: #2d2d2d; margin: 0; padding: 12px; }
+    .row { margin-bottom: 12px; }
+    label { display: block; font-weight: 600; margin-bottom: 4px; color: #fff; }
+    input { width: 100%; box-sizing: border-box; background: #3d3d3d; color: #fff;
+      border: 1px solid #555; border-radius: 4px; padding: 6px 8px; font: inherit; }
+    .hint { color: #999; font-size: 11px; margin-top: 4px; }
+    code { background: #1e1e1e; padding: 1px 4px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <label for="a">Device A name</label>
+    <input id="a" type="text" placeholder="Shure MV7" />
+    <div class="hint">A fragment of the playback device name (partial, case-insensitive).</div>
+  </div>
+
+  <div class="row">
+    <label for="b">Device B name</label>
+    <input id="b" type="text" placeholder="M28U" />
+    <div class="hint">Pressing the dial toggles the default output between Device A and Device B.</div>
+  </div>
+
+  <div class="row">
+    <label for="pin">Pin app to the swap (optional)</label>
+    <input id="pin" type="text" placeholder="Discord.exe" />
+    <div class="hint">Executable name to route to the same device via SoundVolumeView. Leave empty to
+      pin nothing. Requires <code>SoundVolumeView.exe</code> in the plugin's <code>scripts/</code> folder.</div>
+  </div>
+
+  <script>
+    let ws, uuid, actionInfo;
+
+    function connectElgatoStreamDeckSocket(port, inUUID, registerEvent, info, inActionInfo) {
+      uuid = inUUID;
+      actionInfo = JSON.parse(inActionInfo);
+      ws = new WebSocket("ws://127.0.0.1:" + port);
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ event: registerEvent, uuid }));
+        const s = (actionInfo.payload && actionInfo.payload.settings) || {};
+        document.getElementById("a").value = s.deviceA || "";
+        document.getElementById("b").value = s.deviceB || "";
+        document.getElementById("pin").value = s.pinApp || "";
+      };
+    }
+
+    function save() {
+      const settings = {
+        deviceA: document.getElementById("a").value.trim(),
+        deviceB: document.getElementById("b").value.trim(),
+        pinApp: document.getElementById("pin").value.trim()
+      };
+      ws.send(JSON.stringify({ event: "setSettings", context: uuid, payload: settings }));
+    }
+
+    document.addEventListener("DOMContentLoaded", () =>
+      ["a", "b", "pin"].forEach(id =>
+        document.getElementById(id).addEventListener("change", save)));
+  </script>
+</body>
+</html>
