@@ -59,16 +59,6 @@ to see your exact playback device names.
   `csc vol.cs` if you ever need to.
 - Windows 10/11, Stream Deck software 6.4+, a Stream Deck+ (encoder/dial hardware).
 
-## ⚠️ Before making this repo public
-This repo is **private** for now. The working tree is de-personalized (real device names live in the
-gitignored `config.json`; `config.json.example` ships placeholders), and the seed script's hard-coded
-personal device-endpoint ID has been removed. But earlier **git history still contains that personal
-device-endpoint ID**. Before going public:
-- **Scrub history** (e.g. `git filter-repo`) to purge it, **or**
-- **Re-init** a fresh repo from the current tree (drop history) and re-create the remote.
-
-Then audit once more before flipping visibility.
-
 ## Layout
 - `com.welsh.audioswap.sdPlugin/plugin.js` — config load + swap/volume logic
 - `com.welsh.audioswap.sdPlugin/manifest.json` — the Audio Output encoder action
