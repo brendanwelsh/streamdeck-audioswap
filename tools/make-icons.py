@@ -92,12 +92,17 @@ render(p("action-audio@2x.png"),  40, WHITE, WHITE)
 render(p("category.png"),         28, WHITE, WHITE)
 render(p("category@2x.png"),      56, WHITE, WHITE)
 
+# Key image (the dial tile in the app canvas): white glyph on transparent, proper key sizes (72 / 144)
+render(p("key.png"),              72, WHITE, WHITE)
+render(p("key@2x.png"),          144, WHITE, WHITE)
+
 # Plugin "logo" tile: full-color sky gradient + white glyph (256 / 512)
 render(p("plugin-icon.png"),     256, WHITE, WHITE, tile=True)
 render(p("plugin-icon@2x.png"),  512, WHITE, WHITE, tile=True)
 
-# LCD dial pixmap: white speaker + sky-blue arrows on transparent (48 / 96)
-render(p("speaker.png"),          48, WHITE, SKY)
-render(p("speaker@2x.png"),       96, WHITE, SKY)
+# LCD dial pixmap: white speaker + sky-blue arrows on transparent. Sent as a base64 data URI and
+# scaled by Stream Deck into a 48px layout box on a hi-DPI touchscreen, so render BIG (288) to stay
+# crisp — a small source here is what made the dial icon look blurry.
+render(p("speaker.png"),         288, WHITE, SKY)
 
 print("done ->", IMGS)
