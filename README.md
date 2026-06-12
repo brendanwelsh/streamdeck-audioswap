@@ -70,7 +70,9 @@ dropdown instead of writing them by hand. `config.json` is gitignored. Tip: run 
 ## Layout
 - `com.welsh.audioswap.sdPlugin/plugin.js` — config load + swap/volume logic
 - `com.welsh.audioswap.sdPlugin/manifest.json` — the Audio Output encoder action
-- `com.welsh.audioswap.sdPlugin/pi/audio.html` — Property Inspector (settings UI)
+- `com.welsh.audioswap.sdPlugin/pi/audio.html` — Property Inspector (settings UI), built on
+  Elgato's [sdpi-components](https://sdpi-components.dev) for the native Stream Deck look
+- `com.welsh.audioswap.sdPlugin/pi/sdpi-components.js` — vendored sdpi-components library (BSD-3)
 - `com.welsh.audioswap.sdPlugin/config.json.example` — config template
 - `com.welsh.audioswap.sdPlugin/scripts/audio-swap.ps1` — toggle default device (ID-preferred) + optional app pin
 - `com.welsh.audioswap.sdPlugin/scripts/audio-current.ps1` — report the current device

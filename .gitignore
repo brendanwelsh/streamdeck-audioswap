@@ -9,6 +9,7 @@ com.welsh.audioswap.sdPlugin/config.json
 # users download it themselves and drop it next to the scripts.
 SoundVolumeView.exe
 
-# Dev-only artifacts: generated icon preview + machine-specific integration harness.
+# Dev-only artifacts: generated previews + machine-specific integration harness.
 icon-preview.png
+pi-preview.png
 tools/test-harness.js

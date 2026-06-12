@@ -1,131 +1,30 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head lang="en">
   <meta charset="utf-8" />
-  <title>Audio Output settings</title>
+  <title>Audio Output Swap</title>
+  <script src="sdpi-components.js"></script>
   <style>
-    body { font: 13px/1.4 -apple-system, "Segoe UI", sans-serif; color: #ddd; background: #2d2d2d; margin: 0; padding: 12px; }
-    .row { margin-bottom: 12px; }
-    label { display: block; font-weight: 600; margin-bottom: 4px; color: #fff; }
-    select, input { width: 100%; box-sizing: border-box; background: #3d3d3d; color: #fff;
-      border: 1px solid #555; border-radius: 4px; padding: 6px 8px; font: inherit; }
-    select { appearance: none; -webkit-appearance: none; cursor: pointer; }
-    .hint { color: #999; font-size: 11px; margin-top: 4px; }
-    code { background: #1e1e1e; padding: 1px 4px; border-radius: 3px; }
-    .bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-    .bar h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #8a8a8a; margin: 0; }
-    button { background: #3d3d3d; color: #cfe8ff; border: 1px solid #555; border-radius: 4px;
-      padding: 4px 10px; font: inherit; cursor: pointer; }
-    button:hover { background: #474747; }
+    .note { font-size: 0.85em; font-style: italic; color: var(--color-content-secondary, #969696); padding-left: 4px; }
   </style>
 </head>
 <body>
-  <div class="bar">
-    <h2>Audio Output Swap</h2>
-    <button id="refresh" type="button" title="Re-read playback devices">↻ Refresh</button>
-  </div>
+  <sdpi-item label="Device A">
+    <sdpi-select setting="deviceAId" label-setting="deviceA" datasource="getDevices"
+                 loading="Loading devices…" placeholder="Select a device" show-refresh></sdpi-select>
+  </sdpi-item>
 
-  <div class="row">
-    <label for="a">Device A</label>
-    <select id="a"><option value="">— loading devices… —</option></select>
-  </div>
+  <sdpi-item label="Device B">
+    <sdpi-select setting="deviceBId" label-setting="deviceB" datasource="getDevices"
+                 loading="Loading devices…" placeholder="Select a device" show-refresh></sdpi-select>
+  </sdpi-item>
 
-  <div class="row">
-    <label for="b">Device B</label>
-    <select id="b"><option value="">— loading devices… —</option></select>
-    <div class="hint">Pressing (or tapping) the dial toggles the default output between Device A and Device B.</div>
-  </div>
+  <sdpi-item label="Pin app">
+    <sdpi-textfield setting="pinApp" placeholder="Discord.exe (optional)"></sdpi-textfield>
+  </sdpi-item>
 
-  <div class="row">
-    <label for="pin">Pin app to the swap (optional)</label>
-    <input id="pin" type="text" placeholder="Discord.exe" />
-    <div class="hint">Executable name to route to the same device via SoundVolumeView. Leave empty to
-      pin nothing. Requires <code>SoundVolumeView.exe</code> in the plugin's <code>scripts/</code> folder.</div>
-  </div>
-
-  <script>
-    let ws, uuid, action, settings = {}, devices = [];
-
-    function connectElgatoStreamDeckSocket(port, inUUID, registerEvent, info, inActionInfo) {
-      uuid = inUUID;
-      const ai = JSON.parse(inActionInfo);
-      action = ai.action;
-      settings = (ai.payload && ai.payload.settings) || {};
-      ws = new WebSocket("ws://127.0.0.1:" + port);
-      ws.onopen = () => {
-        ws.send(JSON.stringify({ event: registerEvent, uuid }));
-        document.getElementById("pin").value = settings.pinApp || "";
-        requestDevices();
-      };
-      ws.onmessage = (e) => {
-        let m; try { m = JSON.parse(e.data); } catch (_) { return; }
-        if (m.event === "sendToPropertyInspector" && m.payload && m.payload.event === "devices") {
-          devices = Array.isArray(m.payload.devices) ? m.payload.devices : [];
-          fillSelect("a", settings.deviceAId, settings.deviceA);
-          fillSelect("b", settings.deviceBId, settings.deviceB);
-        }
-      };
-    }
-
-    function requestDevices() {
-      ws.send(JSON.stringify({ event: "sendToPlugin", action, context: uuid, payload: { request: "devices" } }));
-    }
-
-    // Build a <select> from the device list. Duplicate names get a numeric suffix so the three
-    // identically-named endpoints are distinguishable; the option value is the exact endpoint ID.
-    function fillSelect(id, savedId, savedName) {
-      const sel = document.getElementById(id);
-      sel.innerHTML = "";
-      const ph = new Option("— select a device —", "");
-      sel.add(ph);
-
-      if (!devices.length) {
-        sel.options[0].text = "— no devices found (is the plugin running?) —";
-      }
-
-      const counts = {};
-      devices.forEach(d => { counts[d.name] = (counts[d.name] || 0) + 1; });
-      const seen = {};
-      let matched = false;
-      devices.forEach(d => {
-        let text = d.name;
-        if (counts[d.name] > 1) { seen[d.name] = (seen[d.name] || 0) + 1; text += "  #" + seen[d.name]; }
-        if (d.default) text += "  ✓ current";
-        const opt = new Option(text, d.id);
-        opt.dataset.name = d.name;
-        sel.add(opt);
-        // Prefer matching the saved exact ID; fall back to the saved name.
-        if ((savedId && d.id === savedId) || (!savedId && savedName && d.name === savedName)) {
-          opt.selected = true; matched = true;
-        }
-      });
-
-      // Saved device no longer present (e.g. unplugged / ID drifted): keep it visible & selected.
-      if (!matched && (savedId || savedName)) {
-        const opt = new Option((savedName || "saved device") + "  (not connected)", savedId || "");
-        opt.dataset.name = savedName || "";
-        opt.selected = true;
-        sel.add(opt);
-      }
-    }
-
-    function save() {
-      const a = document.getElementById("a").selectedOptions[0] || {};
-      const b = document.getElementById("b").selectedOptions[0] || {};
-      settings = Object.assign({}, settings, {
-        deviceA:   (a.dataset && a.dataset.name) || "",
-        deviceAId: a.value || "",
-        deviceB:   (b.dataset && b.dataset.name) || "",
-        deviceBId: b.value || "",
-        pinApp:    document.getElementById("pin").value.trim()
-      });
-      ws.send(JSON.stringify({ event: "setSettings", context: uuid, payload: settings }));
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      ["a", "b", "pin"].forEach(id => document.getElementById(id).addEventListener("change", save));
-      document.getElementById("refresh").addEventListener("click", requestDevices);
-    });
-  </script>
+  <sdpi-item>
+    <aside class="note">Push or tap the dial to toggle the default output between A and B. Rotate for master volume.</aside>
+  </sdpi-item>
 </body>
 </html>

@@ -1,10 +1,11 @@
 param(
-  [Parameter(Mandatory=$true)][string]$DeviceA,
-  [Parameter(Mandatory=$true)][string]$DeviceB,
+  [string]$DeviceA = '',
+  [string]$DeviceB = '',
   [string]$PinApp = '',
   [string]$DeviceAId = '',
   [string]$DeviceBId = ''
 )
+# Each device is identified by its exact endpoint ID (preferred) and/or a name fragment.
 # Toggle the Windows DEFAULT playback device between Device A and Device B.
 # Targeting prefers the exact endpoint ID (handles duplicate device NAMES, e.g. a monitor that
 # exposes several identically-named HDMI/DP audio endpoints) and falls back to a partial,
