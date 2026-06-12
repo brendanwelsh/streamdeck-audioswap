@@ -8,3 +8,7 @@ com.welsh.audioswap.sdPlugin/config.json
 # vol.exe IS vendored (our own tiny helper). Do NOT vendor SoundVolumeView.exe (third-party license);
 # users download it themselves and drop it next to the scripts.
 SoundVolumeView.exe
+
+# Dev-only artifacts: generated icon preview + machine-specific integration harness.
+icon-preview.png
+tools/test-harness.js

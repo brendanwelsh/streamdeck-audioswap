@@ -1,6 +1,8 @@
 {
-  "_comment": "Copy this file to config.json and change the values to your own. config.json is gitignored. These same values can instead (or also) be set per-action in the Stream Deck Property Inspector, which overrides this file. deviceA/deviceB are name fragments matched against your playback devices (partial, case-insensitive). pinApp is optional (e.g. Discord.exe); leave empty to pin nothing.",
+  "_comment": "Copy this file to config.json and change the values to your own. config.json is gitignored. These same values can instead (or also) be set per-action in the Stream Deck Property Inspector (the dropdowns), which overrides this file. deviceA/deviceB are name fragments matched against your playback devices (partial, case-insensitive). deviceAId/deviceBId are OPTIONAL exact endpoint IDs that disambiguate duplicate device names (e.g. a monitor exposing several identically-named HDMI/DP audio endpoints) - usually you just pick these from the dropdown instead of writing them here. pinApp is optional (e.g. Discord.exe); leave empty to pin nothing.",
   "deviceA": "Shure MV7",
   "deviceB": "M28U",
+  "deviceAId": "",
+  "deviceBId": "",
   "pinApp": "Discord.exe"
 }

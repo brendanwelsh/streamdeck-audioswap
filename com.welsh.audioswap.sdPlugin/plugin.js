@@ -18,7 +18,7 @@ const REGISTER_EVENT = arg("-registerEvent");
 // deviceA / deviceB are name fragments matched against the playback device list
 // (partial, case-insensitive). pinApp is optional (e.g. "Discord.exe"); empty = don't pin.
 // ---------------------------------------------------------------------------
-let DEVICE_A = "", DEVICE_B = "", PIN_APP = "";
+let DEVICE_A = "", DEVICE_B = "", PIN_APP = "", DEVICE_A_ID = "", DEVICE_B_ID = "";
 
 function readFileConfig() {
   try { return JSON.parse(fs.readFileSync(path.join(DIR, "config.json"), "utf8")); }
@@ -26,14 +26,19 @@ function readFileConfig() {
 }
 function applyConfig(settings) {
   const file = readFileConfig();
-  DEVICE_A = ((settings && settings.deviceA) || file.deviceA || "").trim();
-  DEVICE_B = ((settings && settings.deviceB) || file.deviceB || "").trim();
-  PIN_APP  = ((settings && settings.pinApp)  || file.pinApp  || "").trim();
+  DEVICE_A    = ((settings && settings.deviceA)   || file.deviceA   || "").trim();
+  DEVICE_B    = ((settings && settings.deviceB)   || file.deviceB   || "").trim();
+  PIN_APP     = ((settings && settings.pinApp)    || file.pinApp    || "").trim();
+  // Optional exact endpoint IDs (chosen in the Property Inspector). Disambiguate duplicate device
+  // names; the .ps1 falls back to name matching when an ID is absent or has drifted.
+  DEVICE_A_ID = ((settings && settings.deviceAId) || file.deviceAId || "").trim();
+  DEVICE_B_ID = ((settings && settings.deviceBId) || file.deviceBId || "").trim();
 }
 const CONFIGURED = () => DEVICE_A && DEVICE_B;
 
 const SWAP_PS = path.join(DIR, "scripts", "audio-swap.ps1");
 const CUR_PS = path.join(DIR, "scripts", "audio-current.ps1");
+const LIST_PS = path.join(DIR, "scripts", "audio-list.ps1");
 const VOLEXE = path.join(DIR, "scripts", "vol.exe");
 
 function dataUri(file) {
@@ -64,14 +69,35 @@ function labelFor(name) {
   return (name || "").toUpperCase().slice(0, 14);
 }
 function q(s) { return '"' + String(s).replace(/"/g, '') + '"'; }
-function psSwap() { return 'powershell -NoProfile -ExecutionPolicy Bypass -File ' + q(SWAP_PS) +
-  " -DeviceA " + q(DEVICE_A) + " -DeviceB " + q(DEVICE_B) + " -PinApp " + q(PIN_APP); }
+function psBase(file) { return 'powershell -NoProfile -ExecutionPolicy Bypass -File ' + q(file); }
+function psSwap() {
+  // Only pass optional args when set: PowerShell's -File drops empty-string values, which would
+  // bind "-PinApp" with no value and abort the whole script (i.e. no swap at all).
+  let cmd = psBase(SWAP_PS) + " -DeviceA " + q(DEVICE_A) + " -DeviceB " + q(DEVICE_B);
+  if (PIN_APP)     cmd += " -PinApp "    + q(PIN_APP);
+  if (DEVICE_A_ID) cmd += " -DeviceAId " + q(DEVICE_A_ID);
+  if (DEVICE_B_ID) cmd += " -DeviceBId " + q(DEVICE_B_ID);
+  return cmd;
+}
 
+let lastSwap = 0;
 function swapAudio() {
   if (!CONFIGURED()) return;
+  const now = Date.now();
+  if (now - lastSwap < 350) return;   // debounce: ignore double-fire / rapid double-press
+  lastSwap = now;
   exec(psSwap(), (e, out) => {
     const m = /->\s*(.+)\s*$/.exec((out || "").trim());
     if (m) { audioLabel = labelFor(m[1]); renderAudio(); }
+  });
+}
+
+// Enumerate playback devices and hand them to the Property Inspector dropdowns.
+function sendDevices(ctx) {
+  exec(psBase(LIST_PS), (e, out) => {
+    let devices = [];
+    try { devices = JSON.parse((out || "").trim() || "[]"); } catch (_) {}
+    send({ event: "sendToPropertyInspector", context: ctx, payload: { event: "devices", devices } });
   });
 }
 function queryAudio() {
@@ -109,6 +135,13 @@ ws.addEventListener("message", (ev) => {
     case "didReceiveSettings":
       if (a === AUDIO) { applyConfig(settings); renderAudio(); queryAudio(); }
       break;
+    case "propertyInspectorDidAppear":
+      if (a === AUDIO) sendDevices(ctx);
+      break;
+    case "sendToPlugin":
+      // Property Inspector asking for the live device list to fill its dropdowns.
+      if (a === AUDIO && m.payload && m.payload.request === "devices") sendDevices(ctx);
+      break;
     case "willDisappear":
       audioCtx.delete(ctx);
       break;
@@ -118,7 +151,16 @@ ws.addEventListener("message", (ev) => {
         adjustVolume(t);
       }
       break;
+    // Push to swap. dialDown is the modern (SD 6.5+) event; dialPress is the legacy (<=6.4) event
+    // and fires for both press and release, so guard on payload.pressed. touchTap = tap the LCD.
+    // swapAudio() is debounced, so overlap can't double-swap.
     case "dialDown":
+      if (a === AUDIO) swapAudio();
+      break;
+    case "dialPress":
+      if (a === AUDIO && m.payload && m.payload.pressed) swapAudio();
+      break;
+    case "touchTap":
       if (a === AUDIO) swapAudio();
       break;
   }
