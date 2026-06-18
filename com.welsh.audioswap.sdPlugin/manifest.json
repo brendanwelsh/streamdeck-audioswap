@@ -1,11 +1,11 @@
 {
   "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
-  "Name": "Audio Output Swap",
-  "Version": "1.0.0.0",
+  "Name": "Audio Output Switcher",
+  "Version": "2.0.0.0",
   "Author": "Welsh",
   "URL": "https://github.com/brendanwelsh/streamdeck-audioswap",
-  "Description": "Swap the Windows default audio output between two devices (press) and control master volume (rotate) from a Stream Deck+ dial.",
-  "Category": "Audio Output Swap",
+  "Description": "Scroll through your Windows audio outputs on a Stream Deck+ dial (rotate) and push to switch the default playback device.",
+  "Category": "Audio Output Switcher",
   "CategoryIcon": "imgs/category",
   "Icon": "imgs/plugin-icon",
   "SDKVersion": 2,
@@ -19,11 +19,11 @@
       "UUID": "com.welsh.audioswap.output",
       "Icon": "imgs/action-audio",
       "PropertyInspectorPath": "pi/audio.html",
-      "Tooltip": "Press to swap the default output device, rotate for master volume",
+      "Tooltip": "Rotate to scroll your audio outputs, push to set the highlighted one as default",
       "Controllers": ["Encoder"],
       "Encoder": {
         "layout": "layouts/audiodial.json",
-        "TriggerDescription": { "Rotate": "Master volume", "Push": "Swap output device" }
+        "TriggerDescription": { "Rotate": "Scroll outputs", "Push": "Set highlighted output" }
       },
       "States": [ { "Image": "imgs/key", "TitleAlignment": "middle" } ]
     }

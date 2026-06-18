@@ -2,29 +2,34 @@
 <html>
 <head lang="en">
   <meta charset="utf-8" />
-  <title>Audio Output Swap</title>
+  <title>Audio Output Switcher</title>
   <script src="sdpi-components.js"></script>
   <style>
-    .note { font-size: 0.85em; font-style: italic; color: var(--color-content-secondary, #969696); padding-left: 4px; }
+    .note { font-size: 0.9em; color: var(--color-content-primary, #d8d8d8); padding: 4px 6px; line-height: 1.45; }
+    .tip  { font-size: 0.85em; font-style: italic; color: var(--color-content-secondary, #969696); padding: 4px 6px; line-height: 1.45; }
+    .note b, .tip b { color: var(--color-content-primary, #ffffff); }
   </style>
 </head>
 <body>
-  <sdpi-item label="Device A">
-    <sdpi-select setting="deviceAId" label-setting="deviceA" datasource="getDevices"
-                 loading="Loading devices…" placeholder="Select a device" show-refresh></sdpi-select>
-  </sdpi-item>
-
-  <sdpi-item label="Device B">
-    <sdpi-select setting="deviceBId" label-setting="deviceB" datasource="getDevices"
-                 loading="Loading devices…" placeholder="Select a device" show-refresh></sdpi-select>
-  </sdpi-item>
-
-  <sdpi-item label="Pin app">
-    <sdpi-textfield setting="pinApp" placeholder="Discord.exe (optional)"></sdpi-textfield>
+  <sdpi-item>
+    <aside class="note">
+      <b>Rotate</b> the dial to scroll through your audio outputs — the highlighted device shows on the screen.<br>
+      <b>Push</b> the dial (or tap the screen) to make it the Windows default output.
+    </aside>
   </sdpi-item>
 
   <sdpi-item>
-    <aside class="note">Push or tap the dial to toggle the default output between A and B. Rotate for master volume.</aside>
+    <aside class="tip">
+      Nothing to set up — the list is read live from Windows. Plug/unplug a device and it shows up next time the dial loads.
+    </aside>
+  </sdpi-item>
+
+  <sdpi-item>
+    <aside class="tip">
+      Using <b>Discord</b>? In <b>Discord → User Settings → Voice &amp; Video → Output Device</b>, choose
+      <b>Default</b>. Discord can't be routed per-app, but it follows the Windows default, so it switches
+      automatically with the dial.
+    </aside>
   </sdpi-item>
 </body>
 </html>
